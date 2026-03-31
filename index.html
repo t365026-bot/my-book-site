@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ghost | messenger</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <div id="auth-screen" class="screen">
+        <div class="auth-box">
+            <h1>ghost</h1>
+            <div id="email-login">
+                <input type="email" id="email" placeholder="Email">
+                <input type="password" id="password" placeholder="Пароль">
+                <button class="primary-btn" id="login-btn">Войти</button>
+                <button class="secondary-btn" id="reg-btn">Создать аккаунт</button>
+                <div class="divider">или</div>
+                <button class="google-btn" id="google-btn">Войти через Google</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-screen" class="screen" style="display:none;">
+        <aside id="sidebar">
+            <header>
+                <div class="my-avatar">G</div>
+                <button id="logout-btn">Выход</button>
+            </header>
+            <div id="chats-list">
+                <div class="chat-item active">Общий чат</div>
+            </div>
+        </aside>
+
+        <main id="chat-area">
+            <header id="chat-header">
+                <div class="chat-info">
+                    <span class="chat-name">Ghost Global</span>
+                    <span class="status">в сети</span>
+                </div>
+            </header>
+            
+            <div id="messages-container"></div>
+
+            <div id="input-panel">
+                <label class="attach-btn">
+                    ➕<input type="file" id="file-input" hidden accept="image/*,video/*,audio/*">
+                </label>
+                <textarea id="msg-input" placeholder="Сообщение..." rows="1"></textarea>
+                <button id="voice-btn" class="action-btn">🎤</button>
+                <button id="send-btn" class="action-btn">➔</button>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
