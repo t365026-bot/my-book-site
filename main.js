@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
+const conf = {
     apiKey: "AIzaSyCOM2tekyIxqOUGWvB1rwiFOCvGS4zFy8o",
     authDomain: "ghost-eadbc.firebaseapp.com",
     projectId: "ghost-eadbc",
@@ -11,96 +11,92 @@ const firebaseConfig = {
     appId: "1:49431891859:web:4721d994c4ebe455e02266"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(conf);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const secretKey = "GHOST_ULTRA_KEY_2026"; // Ключ для AES
+const salt = "GHOST_KEY_2026";
+let curChat = "global";
+let unsub = null;
 
-// --- АВТОРИЗАЦИЯ ---
-document.getElementById('login-btn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
-document.getElementById('reg-btn').onclick = () => createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value);
-document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-document.getElementById('logout-btn').onclick = () => signOut(auth).then(() => location.reload());
+// AUTH
+window.authLog = () => signInWithEmailAndPassword(auth, v('email'), v('pass')).catch(e => alert(e.message));
+window.authReg = () => createUserWithEmailAndPassword(auth, v('email'), v('pass')).catch(e => alert(e.message));
+window.authGoog = () => signInWithPopup(auth, new GoogleAuthProvider());
+window.exit = () => signOut(auth).then(() => location.reload());
 
-onAuthStateChanged(auth, async (user) => {
-    const appUI = document.getElementById('app-screen');
-    const authUI = document.getElementById('auth-screen');
-    if (user) {
-        authUI.style.display = 'none';
-        appUI.style.display = 'flex';
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists()) document.getElementById('profile-modal').style.display = 'flex';
-        initChat();
-    } else {
-        authUI.style.display = 'flex';
-        appUI.style.display = 'none';
+onAuthStateChanged(auth, async (u) => {
+    if (u) {
+        show('app-screen'); hide('auth-screen');
+        const d = await getDoc(doc(db, "users", u.uid));
+        if (!d.exists()) show('p-modal');
+        setChat("global");
     }
 });
 
-// --- ПРОФИЛЬ ---
-document.getElementById('save-profile').onclick = async () => {
-    const nick = document.getElementById('set-username').value.trim().toLowerCase();
-    if (nick) {
-        await setDoc(doc(db, "users", auth.currentUser.uid), { username: nick, uid: auth.currentUser.uid });
-        document.getElementById('profile-modal').style.display = 'none';
+// PROFILE & SEARCH
+window.saveProf = async () => {
+    const n = v('unick').trim().toLowerCase();
+    if (n) { await setDoc(doc(db, "users", auth.currentUser.uid), { username: n, uid: auth.currentUser.uid }); hide('p-modal'); }
+};
+window.openProf = () => show('p-modal');
+
+document.getElementById('search').onkeypress = async (e) => {
+    if (e.key === 'Enter') {
+        const s = await getDocs(query(collection(db, "users"), where("username", "==", e.target.value.toLowerCase())));
+        if (!s.empty) {
+            const t = s.docs[0].data();
+            setChat([auth.currentUser.uid, t.uid].sort().join('_'), "@" + t.username);
+        } else alert("User not found");
     }
 };
-document.getElementById('profile-btn').onclick = () => document.getElementById('profile-modal').style.display = 'flex';
 
-// --- ЧАТ И ГС ---
-async function send(type, val) {
-    let content = val;
-    if (type === 'text') content = CryptoJS.AES.encrypt(val, secretKey).toString();
-    
-    await addDoc(collection(db, "messages"), {
-        uid: auth.currentUser.uid,
-        type: type,
-        content: content,
-        time: serverTimestamp()
-    });
-}
-
-document.getElementById('send-btn').onclick = () => {
-    const inp = document.getElementById('msg-input');
-    if (inp.value.trim()) { send('text', inp.value); inp.value = ''; }
-};
-
-function initChat() {
-    const q = query(collection(db, "messages"), orderBy("time", "asc"));
-    onSnapshot(q, (snap) => {
-        const box = document.getElementById('messages-box');
-        box.innerHTML = '';
-        snap.forEach(d => {
-            const m = d.data();
+// CHAT ENGINE
+window.setChat = (id, title = "Ghost Global") => {
+    curChat = id;
+    document.getElementById('head').innerText = title;
+    if (unsub) unsub();
+    const q = query(collection(db, "messages"), where("cid", "==", id), orderBy("t", "asc"));
+    unsub = onSnapshot(q, (s) => {
+        const b = document.getElementById('msgs'); b.innerHTML = '';
+        s.forEach(doc => {
+            const m = doc.data();
             const div = document.createElement('div');
             div.className = `msg ${m.uid === auth.currentUser.uid ? 'my' : 'other'}`;
-            
-            if (m.type === 'text') {
-                div.innerText = CryptoJS.AES.decrypt(m.content, secretKey).toString(CryptoJS.enc.Utf8);
-            } else if (m.type === 'voice') {
-                div.innerHTML = `<audio src="${m.content}" controls style="width:200px;"></audio>`;
-            }
-            box.appendChild(div);
+            if (m.type === 'txt') div.innerText = CryptoJS.AES.decrypt(m.val, salt).toString(CryptoJS.enc.Utf8);
+            else div.innerHTML = `<audio src="${m.val}" controls></audio>`;
+            b.appendChild(div);
         });
-        box.scrollTop = box.scrollHeight;
+        b.scrollTop = b.scrollHeight;
     });
-}
+};
 
-// ГС через Base64 (Бесплатно)
-let rec; let chunks = [];
-document.getElementById('voice-btn').onmousedown = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    rec = new MediaRecorder(stream);
-    rec.ondataavailable = e => chunks.push(e.data);
+window.sendMsg = async (type = 'txt', val = null) => {
+    const input = document.getElementById('inp');
+    const v = val || input.value;
+    if (!v) return;
+    await addDoc(collection(db, "messages"), {
+        cid: curChat, uid: auth.currentUser.uid, type,
+        val: type === 'txt' ? CryptoJS.AES.encrypt(v, salt).toString() : v,
+        t: serverTimestamp()
+    });
+    if (!val) input.value = '';
+};
+
+// VOICE (FREE BASE64)
+let rec; let ch = [];
+window.startV = async () => {
+    const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+    rec = new MediaRecorder(s);
+    rec.ondataavailable = e => ch.push(e.data);
     rec.onstop = () => {
-        const reader = new FileReader();
-        reader.readAsDataURL(new Blob(chunks, { type: 'audio/ogg' }));
-        reader.onloadend = () => { send('voice', reader.result); chunks = []; };
+        const f = new FileReader(); f.readAsDataURL(new Blob(ch));
+        f.onloadend = () => { sendMsg('voice', f.result); ch = []; };
     };
     rec.start();
-    document.getElementById('voice-btn').classList.add('rec');
 };
-document.getElementById('voice-btn').onmouseup = () => {
-    rec.stop();
-    document.getElementById('voice-btn').classList.remove('rec');
-};
+window.stopV = () => rec.stop();
+
+// UTILS
+const v = (id) => document.getElementById(id).value;
+const show = (id) => document.getElementById(id).style.display = 'flex';
+const hide = (id) => document.getElementById(id).style.display = 'none';
