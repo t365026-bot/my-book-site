@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const conf = {
+const config = {
     apiKey: "AIzaSyCOM2tekyIxqOUGWvB1rwiFOCvGS4zFy8o",
     authDomain: "ghost-eadbc.firebaseapp.com",
     projectId: "ghost-eadbc",
@@ -11,92 +11,121 @@ const conf = {
     appId: "1:49431891859:web:4721d994c4ebe455e02266"
 };
 
-const app = initializeApp(conf);
+const app = initializeApp(config);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const salt = "GHOST_KEY_2026";
-let curChat = "global";
-let unsub = null;
+const key = "GHOST_ULTRA_2026"; 
+let currentChat = "global";
+let stopListen = null;
 
-// AUTH
-window.authLog = () => signInWithEmailAndPassword(auth, v('email'), v('pass')).catch(e => alert(e.message));
-window.authReg = () => createUserWithEmailAndPassword(auth, v('email'), v('pass')).catch(e => alert(e.message));
-window.authGoog = () => signInWithPopup(auth, new GoogleAuthProvider());
-window.exit = () => signOut(auth).then(() => location.reload());
+// СЛУШАТЕЛИ КНОПОК
+const el = (id) => document.getElementById(id);
+const val = (id) => el(id).value;
 
+el('l-btn').onclick = () => signInWithEmailAndPassword(auth, val('email'), val('pass')).catch(e => alert("Ошибка входа"));
+el('r-btn').onclick = () => createUserWithEmailAndPassword(auth, val('email'), val('pass')).catch(e => alert(e.message));
+el('g-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert("Добавь домен в Auth!"));
+el('exit').onclick = () => signOut(auth).then(() => location.reload());
+el('prof-open').onclick = () => el('modal').style.display = 'flex';
+el('global-trigger').onclick = () => loadChat("global", "Ghost Global");
+
+// ПРОВЕРКА ВХОДА
 onAuthStateChanged(auth, async (u) => {
     if (u) {
-        show('app-screen'); hide('auth-screen');
+        el('auth-screen').style.display = 'none';
+        el('app-screen').style.display = 'flex';
         const d = await getDoc(doc(db, "users", u.uid));
-        if (!d.exists()) show('p-modal');
-        setChat("global");
+        if (!d.exists()) el('modal').style.display = 'flex';
+        loadChat("global");
+    } else {
+        el('auth-screen').style.display = 'flex';
+        el('app-screen').style.display = 'none';
     }
 });
 
-// PROFILE & SEARCH
-window.saveProf = async () => {
-    const n = v('unick').trim().toLowerCase();
-    if (n) { await setDoc(doc(db, "users", auth.currentUser.uid), { username: n, uid: auth.currentUser.uid }); hide('p-modal'); }
+// СОХРАНЕНИЕ НИКА
+el('save').onclick = async () => {
+    const n = val('nick').trim().toLowerCase().replace('@', '');
+    if (n.length < 3) return alert("Ник слишком короткий");
+    await setDoc(doc(db, "users", auth.currentUser.uid), { username: n, uid: auth.currentUser.uid });
+    el('modal').style.display = 'none';
 };
-window.openProf = () => show('p-modal');
 
-document.getElementById('search').onkeypress = async (e) => {
+// ПОИСК ЮЗЕРОВ
+el('search').onkeypress = async (e) => {
     if (e.key === 'Enter') {
-        const s = await getDocs(query(collection(db, "users"), where("username", "==", e.target.value.toLowerCase())));
-        if (!s.empty) {
-            const t = s.docs[0].data();
-            setChat([auth.currentUser.uid, t.uid].sort().join('_'), "@" + t.username);
-        } else alert("User not found");
+        const targetNick = e.target.value.toLowerCase().replace('@', '');
+        const q = query(collection(db, "users"), where("username", "==", targetNick));
+        const res = await getDocs(q);
+        if (!res.empty) {
+            const user = res.docs[0].data();
+            const chatId = [auth.currentUser.uid, user.uid].sort().join('_');
+            loadChat(chatId, "@" + user.username);
+        } else alert("Юзер не найден");
     }
 };
 
-// CHAT ENGINE
-window.setChat = (id, title = "Ghost Global") => {
-    curChat = id;
-    document.getElementById('head').innerText = title;
-    if (unsub) unsub();
-    const q = query(collection(db, "messages"), where("cid", "==", id), orderBy("t", "asc"));
-    unsub = onSnapshot(q, (s) => {
-        const b = document.getElementById('msgs'); b.innerHTML = '';
-        s.forEach(doc => {
-            const m = doc.data();
-            const div = document.createElement('div');
-            div.className = `msg ${m.uid === auth.currentUser.uid ? 'my' : 'other'}`;
-            if (m.type === 'txt') div.innerText = CryptoJS.AES.decrypt(m.val, salt).toString(CryptoJS.enc.Utf8);
-            else div.innerHTML = `<audio src="${m.val}" controls></audio>`;
-            b.appendChild(div);
-        });
-        b.scrollTop = b.scrollHeight;
-    });
-};
+// ЛОГИКА ЧАТА
+function loadChat(chatId, title = "Ghost Global") {
+    currentChat = chatId;
+    el('chat-name').innerText = title;
+    if (stopListen) stopListen();
 
-window.sendMsg = async (type = 'txt', val = null) => {
-    const input = document.getElementById('inp');
-    const v = val || input.value;
-    if (!v) return;
+    const q = query(collection(db, "messages"), where("chatId", "==", chatId), orderBy("t", "asc"));
+    stopListen = onSnapshot(q, (snap) => {
+        const box = el('msgs');
+        box.innerHTML = '';
+        snap.forEach(doc => {
+            const m = doc.data();
+            const d = document.createElement('div');
+            d.className = `msg ${m.uid === auth.currentUser.uid ? 'my' : 'other'}`;
+            
+            if (m.type === 'text') {
+                try {
+                    const dec = CryptoJS.AES.decrypt(m.val, key).toString(CryptoJS.enc.Utf8);
+                    d.innerText = dec || "Ошибка дешифровки";
+                } catch { d.innerText = "Зашифровано"; }
+            } else {
+                d.innerHTML = `<audio src="${m.val}" controls style="width:200px"></audio>`;
+            }
+            box.appendChild(d);
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+}
+
+// ОТПРАВКА
+async function send(type, content) {
+    if (!content) return;
+    const finalVal = type === 'text' ? CryptoJS.AES.encrypt(content, key).toString() : content;
     await addDoc(collection(db, "messages"), {
-        cid: curChat, uid: auth.currentUser.uid, type,
-        val: type === 'txt' ? CryptoJS.AES.encrypt(v, salt).toString() : v,
+        chatId: currentChat,
+        uid: auth.currentUser.uid,
+        type: type,
+        val: finalVal,
         t: serverTimestamp()
     });
-    if (!val) input.value = '';
+}
+
+el('s-btn').onclick = () => {
+    if (val('inp').trim()) { send('text', val('inp')); el('inp').value = ''; }
 };
 
-// VOICE (FREE BASE64)
-let rec; let ch = [];
-window.startV = async () => {
-    const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-    rec = new MediaRecorder(s);
-    rec.ondataavailable = e => ch.push(e.data);
-    rec.onstop = () => {
-        const f = new FileReader(); f.readAsDataURL(new Blob(ch));
-        f.onloadend = () => { sendMsg('voice', f.result); ch = []; };
+// ГОЛОСОВЫЕ (Base64)
+let recorder; let chunks = [];
+el('v-btn').onmousedown = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    recorder.onstop = () => {
+        const reader = new FileReader();
+        reader.readAsDataURL(new Blob(chunks));
+        reader.onloadend = () => { send('voice', reader.result); chunks = []; };
     };
-    rec.start();
+    recorder.start();
+    el('v-btn').style.color = '#ff4b4b';
 };
-window.stopV = () => rec.stop();
-
-// UTILS
-const v = (id) => document.getElementById(id).value;
-const show = (id) => document.getElementById(id).style.display = 'flex';
-const hide = (id) => document.getElementById(id).style.display = 'none';
+el('v-btn').onmouseup = () => {
+    recorder.stop();
+    el('v-btn').style.color = '#2481cc';
+};
