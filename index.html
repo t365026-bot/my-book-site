@@ -2,55 +2,54 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ghost | messenger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ghost</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
+
     <div id="auth-screen" class="screen">
-        <div class="auth-card">
+        <div class="auth-box">
             <h1>ghost</h1>
-            <input type="email" id="auth-email" placeholder="Email">
-            <input type="password" id="auth-pass" placeholder="Пароль">
-            <button class="primary-btn" id="login-btn">ВОЙТИ</button>
-            <button class="secondary-btn" id="reg-btn">РЕГИСТРАЦИЯ</button>
-            <button class="google-btn" id="google-btn">GOOGLE LOGIN</button>
+            <div class="auth-inputs">
+                <input type="email" id="auth-email" placeholder="Почта">
+                <input type="password" id="auth-pass" placeholder="Пароль">
+                <button class="btn-main" id="login-btn">ВОЙТИ</button>
+                <button class="btn-sub" id="reg-btn">РЕГИСТРАЦИЯ</button>
+                <hr>
+                <button class="btn-google" id="google-btn">Войти через Google</button>
+            </div>
+            <p id="auth-error" style="color: #ff4b4b; font-size: 12px; margin-top: 10px;"></p>
         </div>
     </div>
 
     <div id="app-screen" class="screen" style="display:none;">
-        <aside id="sidebar">
-            <div class="side-header">
-                <input type="text" id="user-search" placeholder="Поиск @username...">
+        <div class="sidebar">
+            <div class="search-bar">
+                <input type="text" id="user-search" placeholder="Поиск по @username">
             </div>
-            <div id="chats-list">
-                <div class="chat-item active">Общий чат (Ghost Global)</div>
-            </div>
-            <div class="side-footer">
-                <button id="profile-btn">⚙️ ПРОФИЛЬ</button>
-            </div>
-        </aside>
+            <div id="chats-list" class="chats"></div>
+            <button id="profile-btn" class="set-btn">⚙️ ПРОФИЛЬ</button>
+        </div>
 
-        <main id="chat-window">
-            <header>
-                <div class="chat-title">Ghost Global <small>online</small></div>
-            </header>
+        <div class="chat-area">
+            <div id="chat-header">Выберите чат</div>
             <div id="messages-box"></div>
-            <div class="input-area">
+            <div class="input-row">
                 <textarea id="msg-input" placeholder="Сообщение..." rows="1"></textarea>
-                <button id="voice-btn" title="Удерживай для ГС">🎤</button>
+                <button id="voice-btn">🎤</button>
                 <button id="send-btn">➔</button>
             </div>
-        </main>
+        </div>
     </div>
 
     <div id="profile-modal" class="modal" style="display:none;">
         <div class="modal-content">
-            <h3>Твой профиль</h3>
+            <h2>Настройки</h2>
             <input type="text" id="set-username" placeholder="Придумай @username">
-            <button class="primary-btn" id="save-profile">СОХРАНИТЬ</button>
-            <button id="logout-btn" style="background:#ff3b30; color:#fff;">ВЫЙТИ</button>
+            <button class="btn-main" id="save-profile">СОХРАНИТЬ</button>
+            <button class="btn-sub" id="logout-btn">ВЫЙТИ</button>
         </div>
     </div>
 
