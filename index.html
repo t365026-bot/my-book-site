@@ -9,49 +9,49 @@
 </head>
 <body>
     <div id="auth-screen" class="screen">
-        <div class="auth-box">
+        <div class="auth-card">
             <h1>ghost</h1>
-            <div id="email-login">
-                <input type="email" id="email" placeholder="Email">
-                <input type="password" id="password" placeholder="Пароль">
-                <button class="primary-btn" id="login-btn">Войти</button>
-                <button class="secondary-btn" id="reg-btn">Создать аккаунт</button>
-                <div class="divider">или</div>
-                <button class="google-btn" id="google-btn">Войти через Google</button>
-            </div>
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="password" id="auth-pass" placeholder="Пароль">
+            <button class="primary-btn" id="login-btn">ВОЙТИ</button>
+            <button class="secondary-btn" id="reg-btn">РЕГИСТРАЦИЯ</button>
+            <button class="google-btn" id="google-btn">GOOGLE LOGIN</button>
         </div>
     </div>
 
-    <div id="main-screen" class="screen" style="display:none;">
+    <div id="app-screen" class="screen" style="display:none;">
         <aside id="sidebar">
-            <header>
-                <div class="my-avatar">G</div>
-                <button id="logout-btn">Выход</button>
-            </header>
+            <div class="side-header">
+                <input type="text" id="user-search" placeholder="Поиск @username...">
+            </div>
             <div id="chats-list">
-                <div class="chat-item active">Общий чат</div>
+                <div class="chat-item active">Общий чат (Ghost Global)</div>
+            </div>
+            <div class="side-footer">
+                <button id="profile-btn">⚙️ ПРОФИЛЬ</button>
             </div>
         </aside>
 
-        <main id="chat-area">
-            <header id="chat-header">
-                <div class="chat-info">
-                    <span class="chat-name">Ghost Global</span>
-                    <span class="status">в сети</span>
-                </div>
+        <main id="chat-window">
+            <header>
+                <div class="chat-title">Ghost Global <small>online</small></div>
             </header>
-            
-            <div id="messages-container"></div>
-
-            <div id="input-panel">
-                <label class="attach-btn">
-                    ➕<input type="file" id="file-input" hidden accept="image/*,video/*,audio/*">
-                </label>
+            <div id="messages-box"></div>
+            <div class="input-area">
                 <textarea id="msg-input" placeholder="Сообщение..." rows="1"></textarea>
-                <button id="voice-btn" class="action-btn">🎤</button>
-                <button id="send-btn" class="action-btn">➔</button>
+                <button id="voice-btn" title="Удерживай для ГС">🎤</button>
+                <button id="send-btn">➔</button>
             </div>
         </main>
+    </div>
+
+    <div id="profile-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Твой профиль</h3>
+            <input type="text" id="set-username" placeholder="Придумай @username">
+            <button class="primary-btn" id="save-profile">СОХРАНИТЬ</button>
+            <button id="logout-btn" style="background:#ff3b30; color:#fff;">ВЫЙТИ</button>
+        </div>
     </div>
 
     <script type="module" src="main.js"></script>
