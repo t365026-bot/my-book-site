@@ -96,34 +96,27 @@ p {
 h2, h3 {
     margin-top: 40px;
 }
-.center {
-    text-align: center;
-}
-
-.final-section {
+.receive-section {
     margin-top: 50px;
-    padding-top: 20px;
-    border-top: 1px solid #eee; 
+    text-align: left; 
 }
 
-.final-info {
+.receive-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.receive-text {
+    font-size: 19px;
+    line-height: 1.5;
     color: #333;
-    line-height: 1.6;
 }
 
-.final-info strong {
-    font-size: 18px;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.small-text {
-    font-size: 12px;
-    color: #999;
-    margin-top: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.final-section h2.center {
-    letter-spacing: 1px;
+.receive-text u {
+    text-decoration: underline;
 }
