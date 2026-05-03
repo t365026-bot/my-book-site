@@ -100,32 +100,30 @@ h2, h3 {
     text-align: center;
 }
 
-.final-block {
-    margin-top: 40px;
-    padding: 20px 0;
-    border-top: 1px solid #eee; /* Тонкая линия разделения */
-}
-
-.red-banner {
-    background-color: #b71c1c; /* Тот самый темно-красный */
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 20px;
-    margin: 20px 0;
-    border-radius: 5px; /* Совсем легкое скругление */
-    text-transform: uppercase;
+.final-section {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #eee; 
 }
 
 .final-info {
-    text-align: center;
-    color: #555;
-    font-size: 15px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.final-info strong {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 5px;
 }
 
 .small-text {
     font-size: 12px;
     color: #999;
-    margin-top: 10px;
+    margin-top: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.final-section h2.center {
+    letter-spacing: 1px;
 }
