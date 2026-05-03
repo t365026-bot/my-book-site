@@ -100,39 +100,32 @@ h2, h3 {
     text-align: center;
 }
 
-.cta-section {
-    margin-top: 50px;
-    padding: 30px;
-    background-color: #fff9f9;
-    border: 2px solid #b71c1c;
-    border-radius: 15px;
+.final-block {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 1px solid #eee; /* Тонкая линия разделения */
 }
 
-/* Статичная плашка, которая выглядит как кнопка, но не кликается */
-.static-button {
-    display: block;
-    background-color: #b71c1c;
+.red-banner {
+    background-color: #b71c1c; /* Тот самый темно-красный */
     color: white;
-    padding: 20px;
-    font-size: 22px;
+    padding: 15px;
+    text-align: center;
     font-weight: bold;
-    text-align: center;
-    border-radius: 50px;
-    margin: 25px 0;
-    user-select: none; /* Текст нельзя выделить, как на кнопке */
-    pointer-events: none; /* Делает элемент полностью некликбельным */
+    font-size: 20px;
+    margin: 20px 0;
+    border-radius: 5px; /* Совсем легкое скругление */
+    text-transform: uppercase;
 }
 
-.guarantee-box {
-    border-top: 1px solid #ddd;
-    padding-top: 20px;
+.final-info {
     text-align: center;
-    color: #666;
+    color: #555;
+    font-size: 15px;
 }
 
-.footer-note {
+.small-text {
     font-size: 12px;
     color: #999;
-    margin-top: 15px;
+    margin-top: 10px;
 }
-
