@@ -96,3 +96,43 @@ p {
 h2, h3 {
     margin-top: 40px;
 }
+.center {
+    text-align: center;
+}
+
+.cta-section {
+    margin-top: 50px;
+    padding: 30px;
+    background-color: #fff9f9;
+    border: 2px solid #b71c1c;
+    border-radius: 15px;
+}
+
+/* Статичная плашка, которая выглядит как кнопка, но не кликается */
+.static-button {
+    display: block;
+    background-color: #b71c1c;
+    color: white;
+    padding: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 50px;
+    margin: 25px 0;
+    user-select: none; /* Текст нельзя выделить, как на кнопке */
+    pointer-events: none; /* Делает элемент полностью некликбельным */
+}
+
+.guarantee-box {
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    text-align: center;
+    color: #666;
+}
+
+.footer-note {
+    font-size: 12px;
+    color: #999;
+    margin-top: 15px;
+}
+
